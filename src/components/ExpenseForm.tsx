@@ -99,54 +99,56 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
             />
 
             <FormField
-              control={form.control}
+  control={form.control}
+  name="category"
+  render={({ field }) => (
+    <FormItem>
+      <FormLabel>Categoria</FormLabel>
+      <div className="flex flex-wrap gap-4">
+        {CATEGORIES.map((category) => (
+          <label key={category} className="flex items-center space-x-2">
+            <input
+              type="radio"
               name="category"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Categoria</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione uma categoria" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {CATEGORIES.map((category) => (
-                        <SelectItem key={category} value={category}>
-                          {category}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
+              value={category}
+              checked={field.value === category}
+              onChange={() => field.onChange(category)}
+              className="h-4 w-4"
             />
+            <span>{category}</span>
+          </label>
+        ))}
+      </div>
+      <FormMessage />
+    </FormItem>
+  )}
+/>
 
-            <FormField
-              control={form.control}
+<FormField
+  control={form.control}
+  name="paymentMethod"
+  render={({ field }) => (
+    <FormItem>
+      <FormLabel>Meio de Pagamento</FormLabel>
+      <div className="flex flex-wrap gap-4">
+        {PAYMENT_METHODS.map((method) => (
+          <label key={method} className="flex items-center space-x-2">
+            <input
+              type="radio"
               name="paymentMethod"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Meio de Pagamento</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione o meio de pagamento" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {PAYMENT_METHODS.map((method) => (
-                        <SelectItem key={method} value={method}>
-                          {method}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
+              value={method}
+              checked={field.value === method}
+              onChange={() => field.onChange(method)}
+              className="h-4 w-4"
             />
+            <span>{method}</span>
+          </label>
+        ))}
+      </div>
+      <FormMessage />
+    </FormItem>
+  )}
+/>
 
             <div className="flex gap-2 pt-4">
               <Button type="submit" className="flex-1">
