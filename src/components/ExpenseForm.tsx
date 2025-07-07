@@ -98,13 +98,13 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
               )}
             />
 
-            <FormField
+           <FormField
   control={form.control}
   name="category"
   render={({ field }) => (
     <FormItem>
       <FormLabel>Categoria</FormLabel>
-      <div className="flex flex-wrap gap-2">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         {CATEGORIES.map((category) => (
           <label key={category} className="cursor-pointer">
             <input
@@ -116,7 +116,7 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
               className="sr-only peer"
             />
             <span
-              className={`
+              className="
                 inline-block px-4 py-1 
                 border rounded-full 
                 text-sm font-medium
@@ -127,7 +127,7 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
 
                 hover:bg-gray-100 
                 transition
-              `}
+              "
             >
               {category}
             </span>
@@ -145,7 +145,7 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
   render={({ field }) => (
     <FormItem>
       <FormLabel>Meio de Pagamento</FormLabel>
-      <div className="flex flex-wrap gap-2">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         {PAYMENT_METHODS.map((method) => (
           <label key={method} className="cursor-pointer">
             <input
@@ -157,7 +157,7 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
               className="sr-only peer"
             />
             <span
-              className={`
+              className="
                 inline-block px-4 py-1 
                 border rounded-full 
                 text-sm font-medium
@@ -168,7 +168,7 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
 
                 hover:bg-gray-100 
                 transition
-              `}
+              "
             >
               {method}
             </span>
@@ -179,6 +179,7 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
     </FormItem>
   )}
 />
+
 
 
             <div className="flex gap-2 pt-4">
