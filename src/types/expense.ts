@@ -11,25 +11,31 @@ export interface Expense {
 }
 
 export const CATEGORIES = [
-  'Alimentação',
-  'Transporte',
-  'Moradia',
+  'Restaurantes',
+  'Casa',
+  'Mercado',
+  'Carro',
+  'Viagem',
+  'Gatos',
+  'Compras',
   'Saúde',
-  'Educação',
-  'Lazer',
-  'Vestuário',
-  'Serviços',
-  'Outros'
+  'Esportes',
+  'Entretenimento',
+  'Presentes',
+  'Transporte',
+  'Reembolso',
+  'Ateliê e oficina',
 ] as const;
 
 export const PAYMENT_METHODS = [
-  'Dinheiro',
-  'Cartão de Débito',
-  'Cartão de Crédito',
-  'PIX',
-  'Transferência',
-  'Boleto'
+  'Pix Itaú',
+  'Cartão XP',
+  'Débito Itaú',
+  'Dinheiro Vivo',
+  'Manu emprestou',
+  'Fernando emprestou',
 ] as const;
+
 
 export type Category = typeof CATEGORIES[number];
 export type PaymentMethod = typeof PAYMENT_METHODS[number];
