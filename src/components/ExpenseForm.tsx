@@ -99,7 +99,7 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
               <FormLabel>Valor (R$)</FormLabel>
               <FormControl>
                 <Input
-                 // placeholder="0,00"
+                  placeholder=""
                   value={field.value}
                   onChange={(e) => {
                     let v = e.target.value.replace(/[^0-9,]/g, '')
