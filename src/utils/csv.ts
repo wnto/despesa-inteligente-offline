@@ -4,9 +4,9 @@ import { Expense } from '@/types/expense';
 export const exportToCSV = (expenses: Expense[]): void => {
   const headers = [
     'Data do pagamento',
-    'Comentário/Descrição',
+    'Descrição',
     'Valor',
-    'Categoria',
+    'Comentário/Descrição',
     'Meio de Pagamento'
   ];
 
