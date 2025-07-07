@@ -1,8 +1,13 @@
 import React from 'react'
 import { useForm } from 'react-hook-form'
+import ReactDatePicker, { registerLocale } from 'react-datepicker'
+import ptBR from 'date-fns/locale/pt-BR'
+import 'react-datepicker/dist/react-datepicker.css'
 import { format, parseISO } from 'date-fns'
+
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
 import {
   Form,
   FormControl,
@@ -13,18 +18,20 @@ import {
 } from '@/components/ui/form'
 import { CATEGORIES, PAYMENT_METHODS, type Expense } from '@/types/expense'
 
-interface ExpenseFormProps {
-  onSubmit: (expense: Omit<Expense, 'id' | 'createdAt'>) => void
-  onCancel?: () => void
-  initialData?: Expense
-}
+registerLocale('pt-BR', ptBR)
 
 type FormValues = {
   description: string
-  amount: string      // <-- string so we can hold "123,45"
-  date: string        // <-- string so we can hold "31/12/2025"
+  amount: string        // e.g. "123,45"
+  date: string          // ISO string
   category: string
   paymentMethod: string
+}
+
+interface ExpenseFormProps {
+  onSubmit: (expense: Omit<Expense, 'id' | 'createdAt'> & { updatedAt?: string }) => void
+  onCancel?: () => void
+  initialData?: Expense
 }
 
 export const ExpenseForm: React.FC<ExpenseFormProps> = ({
@@ -35,33 +42,24 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
   const form = useForm<FormValues>({
     defaultValues: {
       description: initialData?.description ?? '',
-      // pre-format amount and date:
       amount: initialData
         ? initialData.amount.toFixed(2).replace('.', ',')
         : '0,00',
-      date: initialData
-        ? format(parseISO(initialData.date), 'dd/MM/yyyy')
-        : format(new Date(), 'dd/MM/yyyy'),
+      date: initialData?.date ?? new Date().toISOString(),
       category: initialData?.category ?? '',
       paymentMethod: initialData?.paymentMethod ?? ''
     }
   })
 
   const handleSubmit = (data: FormValues) => {
-    // 1. parse dd/mm/yyyy → ISO
-    const [d, m, y] = data.date.split('/')
-    const isoDate = new Date(
-      Number(y),
-      Number(m) - 1,
-      Number(d)
-    ).toISOString()
-
-    // 2. parse "123,45" → 123.45
+    // Convert amount "123,45" -> 123.45
     const amountNumber = parseFloat(data.amount.replace(',', '.'))
+
+    // data.date is already ISO string from date picker
 
     onSubmit({
       ...data,
-      date: isoDate,
+      date: data.date,
       amount: amountNumber,
       updatedAt: initialData ? new Date().toISOString() : undefined
     })
@@ -73,9 +71,25 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
         onSubmit={form.handleSubmit(handleSubmit)}
         className="space-y-4"
       >
-        {/* … your description textarea … */}
+        {/* Description */}
+        <FormField
+          control={form.control}
+          name="description"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Descrição</FormLabel>
+              <FormControl>
+                <Textarea
+                  placeholder="Descreva a despesa..."
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-        {/* ==== AMOUNT FIELD ==== */}
+        {/* Amount (Brazilian format) */}
         <FormField
           control={form.control}
           name="amount"
@@ -87,16 +101,12 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
                   placeholder="0,00"
                   value={field.value}
                   onChange={(e) => {
-                    // allow only digits & comma
                     let v = e.target.value.replace(/[^0-9,]/g, '')
-                    // only one comma
                     const parts = v.split(',')
-                    if (parts.length > 2)
-                      v = parts[0] + ',' + parts.slice(1).join('')
+                    if (parts.length > 2) v = parts[0] + ',' + parts.slice(1).join('')
                     field.onChange(v)
                   }}
                   onBlur={() => {
-                    // ensure exactly two decimals
                     let v = field.value
                     const [int, dec = ''] = v.split(',')
                     if (!v.includes(',')) {
@@ -117,46 +127,119 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
           )}
         />
 
-        {/* ==== DATE FIELD ==== */}
+        {/* Date (react-datepicker) */}
         <FormField
           control={form.control}
           name="date"
+          render={({ field }) => {
+            const selectedDate = field.value
+              ? parseISO(field.value)
+              : null
+
+            return (
+              <FormItem>
+                <FormLabel>Data</FormLabel>
+                <FormControl>
+                  <ReactDatePicker
+                    locale="pt-BR"
+                    dateFormat="dd/MM/yyyy"
+                    selected={selectedDate}
+                    onChange={(date) => {
+                      if (date) {
+                        field.onChange(date.toISOString())
+                      } else {
+                        field.onChange('')
+                      }
+                    }}
+                    customInput={
+                      <Input
+                        placeholder="dd/MM/yyyy"
+                        value={
+                          selectedDate
+                            ? format(selectedDate, 'dd/MM/yyyy')
+                            : ''
+                        }
+                      />
+                    }
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )
+          }}
+        />
+
+        {/* Category (radio-pills responsive grid) */}
+        <FormField
+          control={form.control}
+          name="category"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Data</FormLabel>
-              <FormControl>
-                <Input
-                  placeholder="dd/mm/yyyy"
-                  value={field.value}
-                  onChange={(e) => {
-                    // allow only digits & slashes
-                    let v = e.target.value.replace(/[^0-9/]/g, '')
-                    const parts = v.split('/')
-                    // cap each segment
-                    if (parts[0].length > 2) parts[0] = parts[0].slice(0, 2)
-                    if (parts[1] && parts[1].length > 2)
-                      parts[1] = parts[1].slice(0, 2)
-                    if (parts[2] && parts[2].length > 4)
-                      parts[2] = parts[2].slice(0, 4)
-                    field.onChange(parts.filter(Boolean).join('/'))
-                  }}
-                  onBlur={() => {
-                    // pad single digits to two digits
-                    const [d, m, y] = field.value.split('/')
-                    const dd = d?.padStart(2, '0') ?? ''
-                    const mm = m?.padStart(2, '0') ?? ''
-                    field.onChange(`${dd}/${mm}/${y}`)
-                  }}
-                />
-              </FormControl>
+              <FormLabel>Categoria</FormLabel>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {CATEGORIES.map((category) => (
+                  <label key={category} className="cursor-pointer">
+                    <input
+                      type="radio"
+                      name="category"
+                      value={category}
+                      checked={field.value === category}
+                      onChange={() => field.onChange(category)}
+                      className="sr-only peer"
+                    />
+                    <span
+                      className={
+                        `inline-block px-4 py-1 border rounded-full text-sm font-medium ` +
+                        `peer-checked:bg-gray-900 peer-checked:text-white peer-checked:border-gray-900 ` +
+                        `hover:bg-gray-100 transition`
+                      }
+                    >
+                      {category}
+                    </span>
+                  </label>
+                ))}
+              </div>
               <FormMessage />
             </FormItem>
           )}
         />
 
-        {/* ==== CATEGORY & PAYMENT METHOD (your radio-pills) ==== */}
-        {/* … copy in your responsive two-column radio-pill grids here … */}
+        {/* Payment Method (radio-pills responsive grid) */}
+        <FormField
+          control={form.control}
+          name="paymentMethod"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Meio de Pagamento</FormLabel>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {PAYMENT_METHODS.map((method) => (
+                  <label key={method} className="cursor-pointer">
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      value={method}
+                      checked={field.value === method}
+                      onChange={() => field.onChange(method)}
+                      className="sr-only peer"
+                    />
+                    <span
+                      className={
+                        `inline-block px-4 py-1 border rounded-full text-sm font-medium ` +
+                        `peer-checked:bg-gray-900 peer-checked:text-white peer-checked:border-gray-900 ` +
+                        `hover:bg-gray-100 transition`
+                      }
+                    >
+                      {method}
+                    </span>
+                  </label>
+                ))}
+              </div>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
+        {/* Actions */}
         <div className="flex gap-2 pt-4">
           <Button type="submit" className="flex-1">
             {initialData ? 'Atualizar' : 'Salvar'}
