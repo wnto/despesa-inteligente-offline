@@ -104,18 +104,33 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
   render={({ field }) => (
     <FormItem>
       <FormLabel>Categoria</FormLabel>
-      <div className="flex flex-wrap gap-4">
+      <div className="flex flex-wrap gap-2">
         {CATEGORIES.map((category) => (
-          <label key={category} className="flex items-center space-x-2">
+          <label key={category} className="cursor-pointer">
             <input
               type="radio"
               name="category"
               value={category}
               checked={field.value === category}
               onChange={() => field.onChange(category)}
-              className="h-4 w-4"
+              className="sr-only peer"
             />
-            <span>{category}</span>
+            <span
+              className={`
+                inline-block px-4 py-1 
+                border rounded-full 
+                text-sm font-medium
+
+                peer-checked:bg-gray-900 
+                peer-checked:text-white 
+                peer-checked:border-gray-900
+
+                hover:bg-gray-100 
+                transition
+              `}
+            >
+              {category}
+            </span>
           </label>
         ))}
       </div>
@@ -130,18 +145,33 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
   render={({ field }) => (
     <FormItem>
       <FormLabel>Meio de Pagamento</FormLabel>
-      <div className="flex flex-wrap gap-4">
+      <div className="flex flex-wrap gap-2">
         {PAYMENT_METHODS.map((method) => (
-          <label key={method} className="flex items-center space-x-2">
+          <label key={method} className="cursor-pointer">
             <input
               type="radio"
               name="paymentMethod"
               value={method}
               checked={field.value === method}
               onChange={() => field.onChange(method)}
-              className="h-4 w-4"
+              className="sr-only peer"
             />
-            <span>{method}</span>
+            <span
+              className={`
+                inline-block px-4 py-1 
+                border rounded-full 
+                text-sm font-medium
+
+                peer-checked:bg-gray-900 
+                peer-checked:text-white 
+                peer-checked:border-gray-900
+
+                hover:bg-gray-100 
+                transition
+              `}
+            >
+              {method}
+            </span>
           </label>
         ))}
       </div>
@@ -149,6 +179,7 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
     </FormItem>
   )}
 />
+
 
             <div className="flex gap-2 pt-4">
               <Button type="submit" className="flex-1">
