@@ -5,7 +5,6 @@ export interface Expense {
   date: string;
   category: string;
   paymentMethod: string;
-  type: 'income' | 'expense';
   createdAt: string;
   updatedAt?: string;
 }
