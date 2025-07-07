@@ -1,7 +1,7 @@
 import React from 'react'
 import { useForm } from 'react-hook-form'
 import ReactDatePicker, { registerLocale } from 'react-datepicker'
-import ptBR from 'date-fns/locale/pt-BR'
+import { ptBR } from 'date-fns/locale/pt-BR'
 import 'react-datepicker/dist/react-datepicker.css'
 import { format, parseISO } from 'date-fns'
 
@@ -61,6 +61,7 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
       ...data,
       date: data.date,
       amount: amountNumber,
+      type: 'expense',
       updatedAt: initialData ? new Date().toISOString() : undefined
     })
   }
@@ -144,7 +145,7 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
                     locale="pt-BR"
                     dateFormat="dd/MM/yyyy"
                     selected={selectedDate}
-                    onChange={(date) => {
+                    onChange={(date: Date | null) => {
                       if (date) {
                         field.onChange(date.toISOString())
                       } else {
