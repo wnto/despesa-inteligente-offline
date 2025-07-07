@@ -90,43 +90,49 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
           )}
         />
 
-        {/* Amount (Brazilian format) */}
-        <FormField
-          control={form.control}
-          name="amount"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Valor (R$)</FormLabel>
-              <FormControl>
-                <Input
-                  placeholder=""
-                  value={field.value}
-                  onChange={(e) => {
-                    let v = e.target.value.replace(/[^0-9,]/g, '')
-                    const parts = v.split(',')
-                    if (parts.length > 2) v = parts[0] + ',' + parts.slice(1).join('')
-                    field.onChange(v)
-                  }}
-                  onBlur={() => {
-                    let v = field.value
-                    const [int, dec = ''] = v.split(',')
-                    if (!v.includes(',')) {
-                      v = `${int},00`
-                    } else if (dec.length === 0) {
-                      v = `${int},00`
-                    } else if (dec.length === 1) {
-                      v = `${int},${dec}0`
-                    } else if (dec.length > 2) {
-                      v = `${int},${dec.slice(0, 2)}`
-                    }
-                    field.onChange(v)
-                  }}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+       <FormField
+  control={form.control}
+  name="amount"
+  render={({ field }) => (
+    <FormItem>
+      <FormLabel>Valor (R$)</FormLabel>
+      <FormControl>
+        <Input
+          placeholder="0,00"
+          value={field.value}
+          onFocus={() => {
+            // Clear the default on first focus
+            if (field.value === '0,00') {
+              field.onChange('')
+            }
+          }}
+          onChange={(e) => {
+            let v = e.target.value.replace(/[^0-9,]/g, '')
+            const parts = v.split(',')
+            if (parts.length > 2) v = parts[0] + ',' + parts.slice(1).join('')
+            field.onChange(v)
+          }}
+          onBlur={() => {
+            let v = field.value
+            const [int, dec = ''] = v.split(',')
+            if (!v.includes(',')) {
+              v = `${int},00`
+            } else if (dec.length === 0) {
+              v = `${int},00`
+            } else if (dec.length === 1) {
+              v = `${int},${dec}0`
+            } else if (dec.length > 2) {
+              v = `${int},${dec.slice(0, 2)}`
+            }
+            field.onChange(v)
+          }}
         />
+      </FormControl>
+      <FormMessage />
+    </FormItem>
+  )}
+/>
+
 
         {/* Date (react-datepicker) */}
         <FormField
