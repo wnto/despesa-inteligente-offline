@@ -61,7 +61,6 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
       ...data,
       date: data.date,
       amount: amountNumber,
-      type: 'expense',
       updatedAt: initialData ? new Date().toISOString() : undefined
     })
   }
