@@ -1,154 +1,260 @@
-import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Trash2, Edit, Download } from 'lucide-react';
-import { Expense } from '@/types/expense';
-import { exportToCSV } from '@/utils/csv';
+import React from 'react'
+import { useForm } from 'react-hook-form'
+import ReactDatePicker, { registerLocale } from 'react-datepicker'
+import ptBR from 'date-fns/locale/pt-BR'
+import 'react-datepicker/dist/react-datepicker.css'
+import { format, parseISO } from 'date-fns'
 
-interface ExpenseListProps {
-  expenses: Expense[];
-  onEdit: (expense: Expense) => void;
-  onDelete: (id: string) => void;
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage
+} from '@/components/ui/form'
+import { CATEGORIES, PAYMENT_METHODS, type Expense } from '@/types/expense'
+
+registerLocale('pt-BR', ptBR)
+
+type FormValues = {
+  description: string
+  amount: string        // e.g. "123,45"
+  date: string          // ISO string
+  category: string
+  paymentMethod: string
 }
 
-export const ExpenseList: React.FC<ExpenseListProps> = ({
-  expenses,
-  onEdit,
-  onDelete
+interface ExpenseFormProps {
+  onSubmit: (expense: Omit<Expense, 'id' | 'createdAt'> & { updatedAt?: string }) => void
+  onCancel?: () => void
+  initialData?: Expense
+}
+
+export const ExpenseForm: React.FC<ExpenseFormProps> = ({
+  onSubmit,
+  onCancel,
+  initialData
 }) => {
-  const totalExpenses = expenses
-    .filter(e => e.type === 'expense')
-    .reduce((sum, e) => sum + e.amount, 0);
-
-  const totalIncome = expenses
-    .filter(e => e.type === 'income')
-    .reduce((sum, e) => sum + e.amount, 0);
-
-  const balance = totalIncome - totalExpenses;
-
-  const handleExport = () => {
-    if (expenses.length > 0) {
-      exportToCSV(expenses);
+  const form = useForm<FormValues>({
+    defaultValues: {
+      description: initialData?.description ?? '',
+      amount: initialData
+        ? initialData.amount.toFixed(2).replace('.', ',')
+        : '0,00',
+      date: initialData?.date ?? new Date().toISOString(),
+      category: initialData?.category ?? '',
+      paymentMethod: initialData?.paymentMethod ?? ''
     }
-  };
+  })
+
+  const handleSubmit = (data: FormValues) => {
+    // Convert amount "123,45" -> 123.45
+    const amountNumber = parseFloat(data.amount.replace(',', '.'))
+
+    // data.date is already ISO string from date picker
+
+    onSubmit({
+      ...data,
+      date: data.date,
+      amount: amountNumber,
+      updatedAt: initialData ? new Date().toISOString() : undefined
+    })
+  }
 
   return (
-    <div className="space-y-4">
-      {/* Resumo Financeiro */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Resumo Financeiro</CardTitle>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={handleExport}
-            disabled={expenses.length === 0}
-          >
-            <Download className="h-4 w-4 mr-2" />
-            Exportar CSV
-          </Button>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-3 gap-4 text-center">
-            <div>
-              <p className="text-sm text-muted-foreground">Receitas</p>
-              <p className="text-lg font-bold text-success">
-                {totalIncome.toLocaleString('pt-BR', { 
-                  style: 'currency', 
-                  currency: 'BRL' 
-                })}
-              </p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Despesas</p>
-              <p className="text-lg font-bold text-destructive">
-                {totalExpenses.toLocaleString('pt-BR', { 
-                  style: 'currency', 
-                  currency: 'BRL' 
-                })}
-              </p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Saldo</p>
-              <p className={`text-lg font-bold ${balance >= 0 ? 'text-success' : 'text-destructive'}`}>
-                {balance.toLocaleString('pt-BR', { 
-                  style: 'currency', 
-                  currency: 'BRL' 
-                })}
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Lista de Despesas */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Histórico de Movimentações</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {expenses.length === 0 ? (
-            <p className="text-center text-muted-foreground py-8">
-              Nenhuma movimentação registrada ainda.
-            </p>
-          ) : (
-            <div className="space-y-3">
-              {expenses
-                .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-                .map((expense) => (
-                  <div 
-                    key={expense.id}
-                    className="flex items-center justify-between p-3 border rounded-lg"
-                  >
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <Badge variant={expense.type === 'income' ? 'default' : 'secondary'}>
-                          {expense.type === 'income' ? 'Receita' : 'Despesa'}
-                        </Badge>
-                        <span className="text-sm text-muted-foreground">
-                          {new Date(expense.date).toLocaleDateString('pt-BR')}
-                        </span>
-                      </div>
-                      <p className="font-medium">{expense.description}</p>
-                      <div className="flex gap-4 text-sm text-muted-foreground">
-                        <span>{expense.category}</span>
-                        <span>{expense.paymentMethod}</span>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <span className={`font-bold ${
-                        expense.type === 'income' ? 'text-success' : 'text-destructive'
-                      }`}>
-                        {expense.type === 'income' ? '+' : '-'}
-                        {expense.amount.toLocaleString('pt-BR', { 
-                          style: 'currency', 
-                          currency: 'BRL' 
-                        })}
-                      </span>
-                      <div className="flex gap-1">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => onEdit(expense)}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => onDelete(expense.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-            </div>
+    <Form {...form}>
+      <form
+        onSubmit={form.handleSubmit(handleSubmit)}
+        className="space-y-4"
+      >
+        {/* Description */}
+        <FormField
+          control={form.control}
+          name="description"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Descrição</FormLabel>
+              <FormControl>
+                <Textarea
+                  placeholder="Descreva a despesa..."
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
           )}
-        </CardContent>
-      </Card>
-    </div>
-  );
-};
+        />
+
+        {/* Amount (Brazilian format) */}
+        <FormField
+          control={form.control}
+          name="amount"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Valor (R$)</FormLabel>
+              <FormControl>
+                <Input
+                  placeholder="0,00"
+                  value={field.value}
+                  onChange={(e) => {
+                    let v = e.target.value.replace(/[^0-9,]/g, '')
+                    const parts = v.split(',')
+                    if (parts.length > 2) v = parts[0] + ',' + parts.slice(1).join('')
+                    field.onChange(v)
+                  }}
+                  onBlur={() => {
+                    let v = field.value
+                    const [int, dec = ''] = v.split(',')
+                    if (!v.includes(',')) {
+                      v = `${int},00`
+                    } else if (dec.length === 0) {
+                      v = `${int},00`
+                    } else if (dec.length === 1) {
+                      v = `${int},${dec}0`
+                    } else if (dec.length > 2) {
+                      v = `${int},${dec.slice(0, 2)}`
+                    }
+                    field.onChange(v)
+                  }}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* Date (react-datepicker) */}
+        <FormField
+          control={form.control}
+          name="date"
+          render={({ field }) => {
+            const selectedDate = field.value
+              ? parseISO(field.value)
+              : null
+
+            return (
+              <FormItem>
+                <FormLabel>Data</FormLabel>
+                <FormControl>
+                  <ReactDatePicker
+                    locale="pt-BR"
+                    dateFormat="dd/MM/yyyy"
+                    selected={selectedDate}
+                    onChange={(date) => {
+                      if (date) {
+                        field.onChange(date.toISOString())
+                      } else {
+                        field.onChange('')
+                      }
+                    }}
+                    customInput={
+                      <Input
+                        placeholder="dd/MM/yyyy"
+                        value={
+                          selectedDate
+                            ? format(selectedDate, 'dd/MM/yyyy')
+                            : ''
+                        }
+                      />
+                    }
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )
+          }}
+        />
+
+        {/* Category (radio-pills responsive grid) */}
+        <FormField
+          control={form.control}
+          name="category"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Categoria</FormLabel>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {CATEGORIES.map((category) => (
+                  <label key={category} className="cursor-pointer">
+                    <input
+                      type="radio"
+                      name="category"
+                      value={category}
+                      checked={field.value === category}
+                      onChange={() => field.onChange(category)}
+                      className="sr-only peer"
+                    />
+                    <span
+                      className={
+                        `inline-block px-4 py-1 border rounded-full text-sm font-medium ` +
+                        `peer-checked:bg-gray-900 peer-checked:text-white peer-checked:border-gray-900 ` +
+                        `hover:bg-gray-100 transition`
+                      }
+                    >
+                      {category}
+                    </span>
+                  </label>
+                ))}
+              </div>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* Payment Method (radio-pills responsive grid) */}
+        <FormField
+          control={form.control}
+          name="paymentMethod"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Meio de Pagamento</FormLabel>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {PAYMENT_METHODS.map((method) => (
+                  <label key={method} className="cursor-pointer">
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      value={method}
+                      checked={field.value === method}
+                      onChange={() => field.onChange(method)}
+                      className="sr-only peer"
+                    />
+                    <span
+                      className={
+                        `inline-block px-4 py-1 border rounded-full text-sm font-medium ` +
+                        `peer-checked:bg-gray-900 peer-checked:text-white peer-checked:border-gray-900 ` +
+                        `hover:bg-gray-100 transition`
+                      }
+                    >
+                      {method}
+                    </span>
+                  </label>
+                ))}
+              </div>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* Actions */}
+        <div className="flex gap-2 pt-4">
+          <Button type="submit" className="flex-1">
+            {initialData ? 'Atualizar' : 'Salvar'}
+          </Button>
+          {onCancel && (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onCancel}
+            >
+              Cancelar
+            </Button>
+          )}
+        </div>
+      </form>
+    </Form>
+  )
+}
