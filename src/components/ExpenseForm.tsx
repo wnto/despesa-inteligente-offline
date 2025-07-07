@@ -25,8 +25,7 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
       amount: initialData?.amount || 0,
       date: initialData?.date || new Date().toISOString().slice(0, 10),
       category: initialData?.category || '',
-      paymentMethod: initialData?.paymentMethod || '',
-      type: initialData?.type || 'expense' as const
+      paymentMethod: initialData?.paymentMethod || ''
     }
   });
 
@@ -48,27 +47,6 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="type"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Tipo</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione o tipo" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="expense">Despesa</SelectItem>
-                      <SelectItem value="income">Receita</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
 
             <FormField
               control={form.control}
