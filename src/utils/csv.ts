@@ -6,8 +6,8 @@ export const exportToCSV = (expenses: Expense[]): void => {
     'Descrição',
     'Valor',
     'Categoria',
-    'Meio de Pagamento',
-    'Tipo'
+    'Meio de Pagamento'//,
+    //'Tipo'
   ];
 
   const csvContent = [
@@ -20,8 +20,8 @@ export const exportToCSV = (expenses: Expense[]): void => {
         currency: 'BRL' 
       }),
       expense.category,
-      expense.paymentMethod,
-      expense.type === 'income' ? 'Receita' : 'Despesa'
+      expense.paymentMethod//,
+      //expense.type === 'income' ? 'Receita' : 'Despesa'
     ].join(';'))
   ].join('\n');
 
