@@ -11,6 +11,8 @@ node_modules
 dist
 dist-ssr
 *.local
+android/ # Corrigido: ignora a pasta 'android' e todo o seu conteúdo
+capacitor.config.json
 
 # Editor directories and files
 .vscode/*

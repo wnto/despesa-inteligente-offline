@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Despesas Mensais</string>
+    <string name="title_activity_main">Despesas Mensais</string>
+    <string name="package_name">com.despesas.mensais</string>
+    <string name="custom_url_scheme">com.despesas.mensais</string>
+</resources>
