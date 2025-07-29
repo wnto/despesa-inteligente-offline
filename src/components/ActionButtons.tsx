@@ -2,20 +2,17 @@ import React, { useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Mic, Camera, FileText, Edit3 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { WhisperSpeech } from 'capacitor-whisper-speech';
 
 interface ActionButtonsProps {
   onManualEntry: () => void;
-  onAudioCapture: () => void;
   onFileUpload: (file: File) => void;
 }
 
 export const ActionButtons: React.FC<ActionButtonsProps> = ({
   onManualEntry,
-  onAudioCapture,
   onFileUpload
 }) => {
-  const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handlePhotoClick = () => {
@@ -29,16 +26,16 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
     }
   };
 
-  const handleAudioClick = () => {
-    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-      toast({
-        title: "Recurso não disponível",
-        description: "Seu navegador não suporta reconhecimento de voz.",
-        variant: "destructive"
-      });
-      return;
+  const handleAudioClick = async () => {
+    console.log('handleAudioClick: Ação de áudio iniciada.');
+    try {
+      console.log('handleAudioClick: Chamando WhisperSpeech.record()...');
+      const result = await WhisperSpeech.record();
+      console.log('handleAudioClick: SUCESSO! Plugin retornou:', JSON.stringify(result));
+    } catch (error) {
+      console.error('handleAudioClick: ERRO! Ocorreu uma exceção:', error);
     }
-    onAudioCapture();
+    console.log('handleAudioClick: Ação de áudio finalizada.');
   };
 
   return (

@@ -9,8 +9,7 @@ import { Expense } from '@/types/expense';
 const Index = () => {
   const [showForm, setShowForm] = useState(false);
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
-  const [isListening, setIsListening] = useState(false);
-  
+
   const { expenses, loading, addExpense, updateExpense, deleteExpense } = useExpenses();
   const { toast } = useToast();
 
@@ -32,50 +31,6 @@ const Index = () => {
     }
     setShowForm(false);
     setEditingExpense(null);
-  };
-
-  const handleAudioCapture = () => {
-    if (isListening) return;
-    
-    setIsListening(true);
-    
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    const recognition = new SpeechRecognition();
-    
-    recognition.lang = 'pt-BR';
-    recognition.interimResults = false;
-    recognition.maxAlternatives = 1;
-
-    recognition.onresult = (event: any) => {
-      const transcript = event.results[0][0].transcript;
-      
-      toast({
-        title: "Áudio capturado",
-        description: `Texto: "${transcript}". Funcionalidade de processamento será implementada.`
-      });
-      
-      setIsListening(false);
-    };
-
-    recognition.onerror = () => {
-      toast({
-        title: "Erro no áudio",
-        description: "Não foi possível capturar o áudio.",
-        variant: "destructive"
-      });
-      setIsListening(false);
-    };
-
-    recognition.onend = () => {
-      setIsListening(false);
-    };
-
-    recognition.start();
-    
-    toast({
-      title: "Gravando...",
-      description: "Fale agora para capturar sua despesa."
-    });
   };
 
   const handleFileUpload = (file: File) => {
@@ -121,7 +76,6 @@ const Index = () => {
           <>
             <ActionButtons
               onManualEntry={handleManualEntry}
-              onAudioCapture={handleAudioCapture}
               onFileUpload={handleFileUpload}
             />
 
